@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Storyboard Generator dengan OpenAI</title>
+    <style>
+        /* RESET & BASE */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+.container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+/* HEADER */
+        .header {
+            background: linear-gradient(135deg, #0a5c36 0%, #10a37f 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(10, 92, 54, 0.25);
+        }
+
+.header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+.header p {
+            opacity: 0.9;
+            font-size: 1em;
+        }
+
+/* API CONFIG */
+        .api-config {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 2px solid #e0e0e0;
+        }
+
+.api-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+.api-header h3 {
+            color: #0a5c36;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+.api-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+.api-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+.api-input-group input:focus {
+            outline: none;
+            border-color: #0a5c36;
+        }
+
+.btn-api {
+            background: #0a5c36;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+.btn-api:hover {
+            background: #0c7c59;
+            transform: translateY(-2px);
+        }
+
+.api-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+.status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+.status-indicator.connected {
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+@keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+/* MAIN GRID */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+@media (min-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+/* CARD STYLES */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+        }
+
+.card h2 {
+            color: #0a5c36;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #e8f5e9;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+/* TEMPLATE SELECTION */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+.template-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+.template-card:hover {
+            transform: translateY(-3px);
+            border-color: #0a5c36;
+            box-shadow: 0 5px 15px rgba(10, 92, 54, 0.1);
+        }
+
+.template-card.active {
+            background: #e8f5e9;
+            border-color: #0a5c36;
+        }
+
+.template-card.ai-enhanced {
+            border-color: #10a37f;
+            background: #f0fdf4;
+        }
+
+.template-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+.template-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+/* AI OPTIONS */
+        .ai-options {
+            background: #f0fdf4;
+            border: 2px solid #10a37f;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+.ai-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+.ai-toggle input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+.ai-toggle label {
+            font-weight: 600;
+            color: #065f46;
+        }
+
+.ai-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+.ai-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+.ai-feature input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+/* FORM STYLES */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #444;
+            font-size: 0.9em;
+        }
+
+input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #0a5c36;
+            box-shadow: 0 0 0 3px rgba(10, 92, 54, 0.1);
+        }
+
+textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+/* BUTTONS */
+        .btn {
+            background: linear-gradient(135deg, #0a5c36 0%, #0c7c59 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+.btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(10, 92, 54, 0.2);
+        }
+
+.btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+.btn-ai {
+            background: linear-gradient(135deg, #10a37f 0%, #0a5c36 100%);
+        }
+
+.btn-ad {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        }
+
+/* LOADING */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+.spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #0a5c36;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+/* STORYBOARD */
+        .storyboard-container {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+.storyboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+.storyboard-header h2 {
+            color: #0a5c36;
+            margin: 0;
+        }
+
+.storyboard-stats {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+.storyboard-stats span {
+            background: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+/* SCENES LIST */
+        .scenes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+.scene-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+
+.scene-item:hover {
+            border-color: #0a5c36;
+            transform: translateY(-2px);
+        }
+
+.scene-item.ai {
+            border-color: #10a37f;
+            background: #f0fdf4;
+        }
+
+.scene-item.ad {
+            border-color: #fbbf24;
+            background: #fefce8;
+        }
+
+.scene-number {
+            background: #0a5c36;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+
+.scene-number.ai {
+            background: #10a37f;
+        }
+
+.scene-number.ad {
+            background: #d97706;
+        }
+
+.scene-content {
+            flex: 1;
+        }
+
+.scene-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+.ai-badge {
+            background: #10a37f;
+            color: white;
+            font-size: 0.7em;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+.scene-desc {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+.scene-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            color: #888;
+        }
+
+.scene-duration {
+            background: #e8f5e9;
+            color: #0a5c36;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+.scene-duration.ai {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+.scene-duration.ad {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+/* TIMELINE */
+        .timeline {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 25px 0;
+            color: white;
+        }
+
+.timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+.timeline-header h3 {
+            color: white;
+            margin: 0;
+        }
+
+.timeline-track {
+            display: flex;
+            height: 50px;
+            background: #2d3748;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+.timeline-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            position: relative;
+            border-right: 1px solid #4a5568;
+        }
+
+.timeline-segment:last-child {
+            border-right: none;
+        }
+
+.timeline-segment.ai {
+            background: #10a37f;
+        }
+
+.timeline-segment.ad {
+            background: #d97706;
+        }
+
+.timeline-label {
+            position: absolute;
+            bottom: 5px;
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+
+/* ACTION BUTTONS */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+.action-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #444;
+        }
+
+.action-btn:hover {
+            border-color: #0a5c36;
+            background: #f0f9f0;
+            transform: translateY(-2px);
+        }
+
+.action-btn.ai {
+            border-color: #10a37f;
+            background: #f0fdf4;
+        }
+
+.action-btn.ai:hover {
+            border-color: #0c7c59;
+        }
+
+/* FOOTER */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+/* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.6em; }
+            .template-grid { grid-template-columns: repeat(2, 1fr); }
+            .storyboard-header { flex-direction: column; gap: 15px; }
+            .storyboard-stats { justify-content: center; }
+            .action-buttons { grid-template-columns: 1fr; }
+            .api-input-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <h1>🎬 Video Storyboard Generator dengan OpenAI</h1>
+            <p>Hasilkan storyboard video Islami + iklan dengan bantuan AI</p>
+        </header>
+
+<!-- API CONFIGURATION -->
+        <section class="api-config">
+            <div class="api-header">
+                <h3><span>🔑</span> Konfigurasi OpenAI API</h3>
+                <div class="api-status">
+                    <div id="status-indicator" class="status-indicator"></div>
+                    <span id="status-text">API belum dikonfigurasi</span>
+                </div>
+            </div>
+            
+            <div class="api-input-group">
+                <input type="password" id="api-key" placeholder="Masukkan API Key OpenAI anda..." value="">
+                <button class="btn-api" onclick="testOpenAI()">Test Sambungan</button>
+            </div>
+            
+            <p style="margin-top: 10px; font-size: 0.85em; color: #666;">
+                API key akan disimpan dalam browser anda sahaja. Dapatkan key di 
+                <a href="https://platform.openai.com/api-keys" target="_blank" style="color: #0a5c36; text-decoration: underline;">
+                    platform.openai.com/api-keys
+                </a>
+            </p>
+        </section>
+
+<div class="main-grid">
+            <!-- TEMPLATE SECTION -->
+            <section class="card">
+                <h2><span>📋</span> Pilih Template Video</h2>
+                <p style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+                    Pilih salah satu template standard. AI akan membantu enhance content.
+                </p>
+                
+                <div class="template-grid" id="template-grid">
+                    <!-- Templates will be loaded by JavaScript -->
+                </div>
+                
+                <div class="ai-options">
+                    <div class="ai-toggle">
+                        <input type="checkbox" id="enable-ai" checked>
+                        <label for="enable-ai">🤖 Aktifkan OpenAI AI</label>
+                    </div>
+                    
+                    <div class="ai-features">
+                        <div class="ai-feature">
+                            <input type="checkbox" id="ai-title" checked>
+                            <label for="ai-title">Judul Kreatif</label>
+                        </div>
+                        <div class="ai-feature">
+                            <input type="checkbox" id="ai-desc" checked>
+                            <label for="ai-desc">Deskripsi Scene</label>
+                        </div>
+                        <div class="ai-feature">
+                            <input type="checkbox" id="ai-cta">
+                            <label for="ai-cta">Call-to-Action</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-ai" onclick="generateWithAI()">
+                    <span>🤖</span> Generate Idea dengan AI
+                </button>
+            </section>
+            
+            <!-- IKLAN SECTION -->
+            <section class="card">
+                <h2><span>📢</span> Maklumat Iklan</h2>
+                <p style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+                    Iklan akan dimainkan selama 15 saat di akhir video.
+                </p>
+                
+                <div class="form-group">
+                    <label for="ad-product">Nama Produk/Perkhidmatan:</label>
+                    <input type="text" id="ad-product" placeholder="Contoh: Kursus Al-Quran Online" value="Kursus Al-Quran Premium">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ad-tagline">Tagline Iklan:</label>
+                    <input type="text" id="ad-tagline" placeholder="Slogan pendek untuk iklan" value="Belajar Al-Quran Dengan Mudah Dari Rumah">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ad-target">Target Audience:</label>
+                    <select id="ad-target">
+                        <option value="umum">👥 Umum</option>
+                        <option value="remaja">🧑‍🎓 Remaja/Belia</option>
+                        <option value="keluarga">👨‍👩‍👧‍👦 Keluarga</option>
+                        <option value="professional">💼 Professional</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ad-contact">Maklumat Hubungan:</label>
+                    <input type="text" id="ad-contact" placeholder="WhatsApp/Website/Instagram" value="www.quranpremium.com | WhatsApp: 012-3456789">
+                </div>
+                
+                <button class="btn btn-ad" onclick="generateStoryboard()">
+                    <span>🚀</span> Hasilkan Storyboard Lengkap
+                </button>
+            </section>
+        </div>
+
+<!-- LOADING INDICATOR -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <h3>Sedang memproses...</h3>
+            <p id="loading-text">Menyambung ke OpenAI</p>
+        </div>
+
+<!-- STORYBOARD OUTPUT -->
+        <section id="storyboard-container" class="storyboard-container">
+            <div class="storyboard-header">
+                <h2>📋 Storyboard Lengkap</h2>
+                <div class="storyboard-stats">
+                    <span id="total-duration">0:00</span>
+                    <span id="total-scenes">0 Adegan</span>
+                    <span id="ai-scenes">🤖 0</span>
+                    <span id="ad-scenes">📢 1</span>
+                </div>
+            </div>
+            
+            <div class="scenes-list" id="scenes-list">
+                <!-- Scenes will be loaded here -->
+            </div>
+            
+            <!-- TIMELINE PREVIEW -->
+            <div class="timeline">
+                <div class="timeline-header">
+                    <h3>🎥 Timeline Video</h3>
+                    <div style="font-size: 0.9em; opacity: 0.8;">🎬 Video | 🤖 AI | 📢 Iklan</div>
+                </div>
+                <div class="timeline-track" id="timeline-track">
+                    <!-- Timeline will be generated here -->
+                </div>
+            </div>
+            
+            <!-- ACTION BUTTONS -->
+            <div class="action-buttons">
+                <div class="action-btn" onclick="exportStoryboard()">
+                    <div style="font-size: 1.5em; margin-bottom: 8px;">📥</div>
+                    Export Storyboard
+                </div>
+                <div class="action-btn ai" onclick="regenerateWithAI()">
+                    <div style="font-size: 1.5em; margin-bottom: 8px;">🤖</div>
+                    Enhance dengan AI
+                </div>
+                <div class="action-btn" onclick="copyToClipboard()">
+                    <div style="font-size: 1.5em; margin-bottom: 8px;">📋</div>
+                    Salin ke Clipboard
+                </div>
+                <div class="action-btn" onclick="resetAll()">
+                    <div style="font-size: 1.5em; margin-bottom: 8px;">🔄</div>
+                    Set Semula
+                </div>
+            </div>
+        </section>
+        
+        <!-- FOOTER -->
+        <footer class="footer">
+            <p>🎬 Video Storyboard Generator dengan OpenAI • Dikhususkan untuk kandungan Islami</p>
+            <p style="margin-top: 8px; font-size: 0.85em;">
+                AI-enhanced content generation untuk video dan iklan berkualiti
+            </p>
+        </footer>
+    </div>
+
+<script>
+    // ============================================
+    // OPENAI CONFIGURATION
+    // ============================================
+    
+    const OPENAI_CONFIG = {
+        apiKey: '',
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        maxTokens: 500,
+        isConnected: false
+    };
+    
+    // ============================================
+    // TEMPLATE DATA
+    // ============================================
+    
+    const templates = {
+        education: {
+            name: "Pendidikan Islam",
+            icon: "🎓",
+            scenes: [
+                { title: "Pengenalan Topik", duration: 20, desc: "Memperkenalkan topik pendidikan dengan ayat Al-Quran yang relevan" },
+                { title: "Penjelasan Konsep", duration: 25, desc: "Menerangkan konsep utama dengan visual yang mudah difahami" },
+                { title: "Contoh Praktikal", duration: 30, desc: "Menunjukkan contoh aplikasi dalam kehidupan seharian" },
+                { title: "Faedah & Kepentingan", duration: 20, desc: "Menerangkan faedah mengamalkan ilmu tersebut" },
+                { title: "Ringkasan & Penutup", duration: 15, desc: "Menyimpulkan pembelajaran dengan nasihat ringkas" }
+            ]
+        },
+        dakwah: {
+            name: "Dakwah",
+            icon: "🕌",
+            scenes: [
+                { title: "Ayat Al-Quran Pembuka", duration: 15, desc: "Memulakan dengan ayat Al-Quran yang sesuai" },
+                { title: "Perkongsian Hadis", duration: 25, desc: "Menerangkan hadis yang berkaitan dengan topik" },
+                { title: "Kisah Teladan", duration: 35, desc: "Mengisahkan sirah atau kisah para sahabat" },
+                { title: "Pengajaran & Ibrah", duration: 20, desc: "Mengambil pengajaran daripada kisah" },
+                { title: "Ajakan Kepada Kebaikan", duration: 20, desc: "Menyeru kepada amalan kebaikan" }
+            ]
+        },
+        family: {
+            name: "Keluarga Islam",
+            icon: "👨‍👩‍👧‍👦",
+            scenes: [
+                { title: "Senario Keluarga", duration: 20, desc: "Memperlihatkan interaksi keluarga muslim" },
+                { title: "Nilai Keluarga Dalam Islam", duration: 25, desc: "Menerangkan nilai-nilai murni keluarga Islam" },
+                { title: "Tip Praktikal", duration: 30, desc: "Memberikan tip praktikal untuk keluarga bahagia" },
+                { title: "Kepentingan Komunikasi", duration: 20, desc: "Menekankan kepentingan komunikasi sihat" },
+                { title: "Penutup Keluarga", duration: 15, desc: "Mesej ringkas untuk kekuatan keluarga" }
+            ]
+        },
+        quran: {
+            name: "Al-Quran",
+            icon: "📖",
+            scenes: [
+                { title: "Bacaan Ayat", duration: 20, desc: "Bacaan ayat Al-Quran dengan tajwid yang betul" },
+                { title: "Terjemahan", duration: 20, desc: "Menerangkan makna ayat secara ringkas" },
+                { title: "Tafsiran Ringkas", duration: 25, desc: "Memberikan tafsiran mudah untuk difahami" },
+                { title: "Konteks Turun Ayat", duration: 20, desc: "Menerangkan situasi ketika ayat diturunkan" },
+                { title: "Aplikasi Dalam Hidup", duration: 20, desc: "Cara mengaplikasikan dalam kehidupan" }
+            ]
+        }
+    };
+    
+    // ============================================
+    // STATE MANAGEMENT
+    // ============================================
+    
+    let selectedTemplate = 'education';
+    let currentStoryboard = null;
+    let isAIConnected = false;
+    
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎬 Video Storyboard Generator initialized');
+        
+        // Load saved API key
+        const savedKey = localStorage.getItem('openai_api_key');
+        if (savedKey) {
+            document.getElementById('api-key').value = savedKey;
+            OPENAI_CONFIG.apiKey = savedKey;
+            updateAPIStatus('API key loaded from storage', 'disconnected');
+        }
+        
+        // Initialize templates
+        renderTemplates();
+        setupTemplateSelection();
+    });
+    
+    // ============================================
+    // TEMPLATE FUNCTIONS
+    // ============================================
+    
+    function renderTemplates() {
+        const grid = document.getElementById('template-grid');
+        let html = '';
+        
+        for (const [key, template] of Object.entries(templates)) {
+            html += `
+                <div class="template-card ${key === selectedTemplate ? 'active' : ''} ${isAIConnected ? 'ai-enhanced' : ''}" 
+                      data-template="${key}"
+                      onclick="selectTemplate('${key}')">
+                    <div class="template-icon">${template.icon}</div>
+                    <div class="template-name">${template.name}</div>
+                    <div style="font-size: 0.8em; color: #666;">${template.scenes.length} adegan</div>
+                </div>
+            `;
+        }
+        
+        grid.innerHTML = html;
+    }
+    
+    function selectTemplate(templateId) {
+        selectedTemplate = templateId;
+        
+        // Update UI
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.classList.remove('active');
+        });
+        document.querySelector(`.template-card[data-template="${templateId}"]`).classList.add('active');
+        
+        console.log(`Template selected: ${templateId}`);
+    }
+    
+    // ============================================
+    // OPENAI FUNCTIONS
+    // ============================================
+    
+    async function testOpenAI() {
+        const apiKey = document.getElementById('api-key').value.trim();
+        
+        if (!apiKey || !apiKey.startsWith('sk-')) {
+            alert('Sila masukkan API key OpenAI yang sah (bermula dengan sk-...)');
+            return;
+        }
+        
+        showLoading('Menyambung ke OpenAI...');
+        
+        try {
+            // Save API key
+            OPENAI_CONFIG.apiKey = apiKey;
+            localStorage.setItem('openai_api_key', apiKey);
+            
+            // Test with a simple request
+            const response = await callOpenAI('Hello, test connection.');
+            
+            if (response) {
+                isAIConnected = true;
+                updateAPIStatus('✅ Berjaya disambung ke OpenAI', 'connected');
+                
+                // Enable AI features
+                document.getElementById('enable-ai').disabled = false;
+                document.querySelectorAll('.ai-feature input').forEach(cb => cb.disabled = false);
+                
+                // Update templates
+                renderTemplates();
+                
+                hideLoading();
+                return true;
+            }
+        } catch (error) {
+            console.error('OpenAI Connection Error:', error);
+            updateAPIStatus('❌ Gagal menyambung: ' + error.message, 'error');
+            isAIConnected = false;
+            hideLoading();
+            return false;
+        }
+    }
+    
+    async function callOpenAI(prompt, systemPrompt = null) {
+        if (!OPENAI_CONFIG.apiKey) {
+            throw new Error('API key tidak diset');
+        }
+        
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${OPENAI_CONFIG.apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: OPENAI_CONFIG.model,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: systemPrompt || 'Anda adalah pakar content creator video Islami. Anda membantu menghasilkan storyboard, skrip, dan idea kreatif untuk video pendidikan Islam dalam Bahasa Malaysia.'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    temperature: OPENAI_CONFIG.temperature,
+                    max_tokens: OPENAI_CONFIG.maxTokens
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`OpenAI API Error: ${errorData.error?.message || response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.choices[0]?.message?.content || '';
+            
+        } catch (error) {
+            console.error('OpenAI API Call Error:', error);
+            throw error;
+        }
+    }
+    
+    // ============================================
+    // GENERATION FUNCTIONS
+    // ============================================
+    
+    async function generateWithAI() {
+        if (!isAIConnected) {
+            alert('Sila sambungkan ke OpenAI terlebih dahulu.');
+            return;
+        }
+        
+        const template = templates[selectedTemplate];
+        const product = document.getElementById('ad-product').value.trim();
+        
+        if (!product) {
+            alert('Sila masukkan nama produk terlebih dahulu.');
+            return;
+        }
+        
+        showLoading('AI sedang menghasilkan idea kreatif...');
+        
+        try {
+            const prompt = `Buat 2 idea kreatif untuk video ${template.name} yang mempromosikan ${product}.
+            
+            Format setiap idea:
+            1. JUDUL: [judul yang menarik]
+            2. KONSEP: [ringkasan konsep 1-2 ayat]
+            3. TONE: [nada video]
+            
+            Idea mesti sesuai dengan nilai Islam dan menarik untuk penonton Malaysia.`;
+            
+            const aiResponse = await callOpenAI(prompt);
+            
+            // Parse and display ideas
+            const ideas = parseIdeasFromAI(aiResponse);
+            displayAIIdeas(ideas);
+            
+        } catch (error) {
+            alert('Gagal generate idea dengan AI: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function generateStoryboard() {
+        const product = document.getElementById('ad-product').value.trim();
+        const tagline = document.getElementById('ad-tagline').value.trim();
+        const target = document.getElementById('ad-target').value;
+        const contact = document.getElementById('ad-contact').value.trim();
+        const useAI = document.getElementById('enable-ai').checked;
+        
+        if (!product) {
+            alert('Sila masukkan nama produk/perkhidmatan.');
+            return;
+        }
+        
+        if (useAI && !isAIConnected) {
+            alert('AI diaktifkan tetapi tidak disambungkan. Sila test connection terlebih dahulu atau disable AI.');
+            return;
+        }
+        
+        showLoading('Membuat storyboard...');
+        
+        try {
+            // Get template
+            const template = templates[selectedTemplate];
+            
+            // Create storyboard object
+            currentStoryboard = {
+                template: template.name,
+                title: '',
+                scenes: [...template.scenes],
+                ad: {
+                    product: product,
+                    tagline: tagline,
+                    target: target,
+                    contact: contact,
+                    duration: 15
+                },
+                aiEnhanced: false,
+                generatedAt: new Date().toLocaleString('ms-MY')
+            };
+            
+            // AI Enhancement
+            if (useAI) {
+                currentStoryboard.aiEnhanced = true;
+                await enhanceStoryboardWithAI();
+            } else {
+                // Use default title
+                currentStoryboard.title = `Video ${template.name} - ${product}`;
+            }
+            
+            // Add advertisement scene
+            currentStoryboard.scenes.push({
+                title: `📢 IKLAN: ${product}`,
+                duration: 15,
+                desc: `${tagline}. Target: ${getTargetLabel(target)}. ${contact}`,
+                isAd: true
+            });
+            
+            // Display storyboard
+            displayStoryboard();
+            
+        } catch (error) {
+            console.error('Storyboard Generation Error:', error);
+            alert('Gagal membuat storyboard: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function enhanceStoryboardWithAI() {
+        if (!currentStoryboard || !isAIConnected) return;
+        
+        showLoading('AI sedang meningkatkan content...');
+        
+        try {
+            const template = templates[selectedTemplate];
+            const product = currentStoryboard.ad.product;
+            const target = currentStoryboard.ad.target;
+            
+            // Generate title with AI
+            if (document.getElementById('ai-title').checked) {
+                const titlePrompt = `Buat judul video yang menarik untuk ${template.name} tentang ${product}. 
+                Target penonton: ${getTargetLabel(target)}.
+                Judul mesti dalam Bahasa Malaysia, menarik, dan sesuai dengan nilai Islam.
+                Hanya berikan judul sahaja, tanpa penjelasan.`;
+                
+                const aiTitle = await callOpenAI(titlePrompt);
+                currentStoryboard.title = cleanAIResponse(aiTitle);
+            } else {
+                currentStoryboard.title = `Video ${template.name} - ${product}`;
+            }
+            
+            // Enhance scene descriptions with AI
+            if (document.getElementById('ai-desc').checked) {
+                for (let i = 0; i < currentStoryboard.scenes.length - 1; i++) { // Exclude ad
+                    const scene = currentStoryboard.scenes[i];
+                    const descPrompt = `Tambahbaik deskripsi scene video ini: "${scene.desc}"
+                    Konteks: Video ${template.name} tentang ${product}
+                    Target: ${getTargetLabel(target)}
+                    Buat lebih kreatif, visual, dan engaging. Berikan dalam 1 ayat sahaja.`;
+                    
+                    const enhancedDesc = await callOpenAI(descPrompt);
+                    currentStoryboard.scenes[i].desc = cleanAIResponse(enhancedDesc);
+                    currentStoryboard.scenes[i].aiGenerated = true;
+                }
+            }
+            
+            // Enhance CTA with AI
+            if (document.getElementById('ai-cta').checked) {
+                const ctaPrompt = `Buat call-to-action yang menarik untuk produk ${product} dalam video pendek.
+                Target: ${getTargetLabel(target)}
+                Format: Instagram Reel (15 saat)
+                Buat 1 CTA yang efektif dalam 1 ayat.`;
+                
+                const aiCTA = await callOpenAI(ctaPrompt);
+                currentStoryboard.ad.ctaEnhanced = cleanAIResponse(aiCTA);
+            }
+            
+        } catch (error) {
+            console.error('AI Enhancement Error:', error);
+            // Fallback to defaults
+            currentStoryboard.title = `Video ${templates[selectedTemplate].name} - ${currentStoryboard.ad.product}`;
+            currentStoryboard.aiEnhanced = false;
+        }
+    }
+    
+    async function regenerateWithAI() {
+        if (!currentStoryboard) {
+            alert('Sila hasilkan storyboard dahulu.');
+            return;
+        }
+        
+        if (!isAIConnected) {
+            alert('Sila sambungkan ke OpenAI terlebih dahulu.');
+            return;
+        }
+        
+        if (confirm('Enhance semua content dengan AI? Deskripsi sedia ada akan ditambahbaik.')) {
+            showLoading('AI sedang meningkatkan content...');
+            
+            try {
+                await enhanceStoryboardWithAI();
+                displayStoryboard();
+                alert('Content telah di-enhance dengan AI!');
+            } catch (error) {
+                alert('Gagal enhance dengan AI: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+    }
+    
+    // ============================================
+    // DISPLAY FUNCTIONS
+    // ============================================
+    
+    function displayStoryboard() {
+        if (!currentStoryboard) return;
+        
+        // Calculate total duration
+        const totalDuration = currentStoryboard.scenes.reduce((sum, scene) => sum + scene.duration, 0);
+        const minutes = Math.floor(totalDuration / 60);
+        const seconds = totalDuration % 60;
+        const durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Update stats
+        document.getElementById('total-duration').textContent = durationStr;
+        document.getElementById('total-scenes').textContent = `${currentStoryboard.scenes.length} Adegan`;
+        
+        const aiSceneCount = currentStoryboard.scenes.filter(s => s.aiGenerated).length;
+        document.getElementById('ai-scenes').textContent = `🤖 ${aiSceneCount}`;
+        
+        // Display scenes
+        const scenesList = document.getElementById('scenes-list');
+        let scenesHTML = '';
+        
+        currentStoryboard.scenes.forEach((scene, index) => {
+            const isAd = scene.isAd;
+            const isAI = scene.aiGenerated;
+            
+            scenesHTML += `
+                <div class="scene-item ${isAd ? 'ad' : isAI ? 'ai' : ''}">
+                    <div class="scene-number ${isAd ? 'ad' : isAI ? 'ai' : ''}">
+                        ${index + 1}
+                    </div>
+                    <div class="scene-content">
+                        <div class="scene-title">
+                            ${scene.title}
+                            ${isAI ? '<span class="ai-badge">AI</span>' : ''}
+                        </div>
+                        <div class="scene-desc">${scene.desc}</div>
+                        <div class="scene-meta">
+                            <span>${isAd ? '📢 Iklan' : '🎬 Video'}</span>
+                            <div class="scene-duration ${isAd ? 'ad' : isAI ? 'ai' : ''}">
+                                ${scene.duration}s
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        scenesList.innerHTML = scenesHTML;
+        
+        // Display timeline
+        displayTimeline();
+        
+        // Show storyboard container
+        document.getElementById('storyboard-container').style.display = 'block';
+        
+        // Scroll to storyboard
+        setTimeout(() => {
+            document.getElementById('storyboard-container').scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+    }
+    
+    function displayTimeline() {
+        if (!currentStoryboard) return;
+        
+        const timeline = document.getElementById('timeline-track');
+        const totalDuration = currentStoryboard.scenes.reduce((sum, scene) => sum + scene.duration, 0);
+        
+        let timelineHTML = '';
+        
+        currentStoryboard.scenes.forEach((scene, index) => {
+            const isAd = scene.isAd;
+            const isAI = scene.aiGenerated;
+            const widthPercent = (scene.duration / totalDuration) * 100;
+            
+            timelineHTML += `
+                <div class="timeline-segment ${isAd ? 'ad' : isAI ? 'ai' : ''}" 
+                     style="width: ${widthPercent}%"
+                     title="${scene.title} (${scene.duration}s)">
+                    ${isAd ? '📢' : isAI ? '🤖' : '🎬'}
+                    <div class="timeline-label">${scene.duration}s</div>
+                </div>
+            `;
+        });
+        
+        timeline.innerHTML = timelineHTML;
+    }
+    
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    
+    function getTargetLabel(targetKey) {
+        const targets = {
+            'umum': 'Umum',
+            'remaja': 'Remaja/Belia',
+            'keluarga': 'Keluarga',
+            'professional': 'Professional'
+        };
+        return targets[targetKey] || targetKey;
+    }
+    
+    function cleanAIResponse(text) {
+        return text.replace(/^["']|["']$/g, '').replace(/^\d+\.\s*/, '').trim();
+    }
+    
+    function parseIdeasFromAI(response) {
+        const ideas = [];
+        const lines = response.split('\n');
+        let currentIdea = null;
+        
+        for (const line of lines) {
+            if (line.includes('JUDUL:') || line.includes('1.')) {
+                if (currentIdea) ideas.push(currentIdea);
+                currentIdea = { title: line.replace(/^(JUDUL:|1\.)\s*/, '').trim() };
+            } else if (line.includes('KONSEP:') || line.includes('2.')) {
+                if (currentIdea) {
+                    currentIdea.concept = line.replace(/^(KONSEP:|2\.)\s*/, '').trim();
+                }
+            } else if (line.includes('TONE:') || line.includes('3.')) {
+                if (currentIdea) {
+                    currentIdea.tone = line.replace(/^(TONE:|3\.)\s*/, '').trim();
+                }
+            } else if (currentIdea && line.trim() && !line.includes('---')) {
+                // Additional info
+                if (!currentIdea.concept) {
+                    currentIdea.concept = line.trim();
+                }
+            }
+        }
+        
+        if (currentIdea && currentIdea.title) {
+            ideas.push(currentIdea);
+        }
+        
+        return ideas.slice(0, 2); // Max 2 ideas
+    }
+    
+    function displayAIIdeas(ideas) {
+        if (!ideas || ideas.length === 0) {
+            alert('AI tidak berjaya menghasilkan idea. Cuba lagi.');
+            return;
+        }
+        
+        let message = '🤖 AI telah menghasilkan idea kreatif:\n\n';
+        
+        ideas.forEach((idea, index) => {
+            message += `IDEA ${index + 1}:\n`;
+            message += `Judul: ${idea.title}\n`;
+            if (idea.concept) message += `Konsep: ${idea.concept}\n`;
+            if (idea.tone) message += `Tone: ${idea.tone}\n`;
+            message += '\n';
+        });
+        
+        message += 'Klik "Hasilkan Storyboard Lengkap" untuk implement idea ini.';
+        alert(message);
+    }
+    
+    function updateAPIStatus(message, status = 'info') {
+        const indicator = document.getElementById('status-indicator');
+        const text = document.getElementById('status-text');
+        
+        text.textContent = message;
+        indicator.className = 'status-indicator';
+        
+        if (status === 'connected') {
+            indicator.classList.add('connected');
+            isAIConnected = true;
+        } else if (status === 'error') {
+            indicator.style.background = '#ef4444';
+            isAIConnected = false;
+        } else if (status === 'disconnected') {
+            indicator.style.background = '#6b7280';
+            isAIConnected = false;
+        }
+    }
+    
+    function showLoading(message) {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('loading-text').textContent = message;
+    }
+    
+    function hideLoading() {
+        document.getElementById('loading').style.display = 'none';
+    }
+    
+    // ============================================
+    // ACTION FUNCTIONS
+    // ============================================
+    
+    function exportStoryboard() {
+        if (!currentStoryboard) {
+            alert('Sila hasilkan storyboard dahulu.');
+            return;
+        }
+        
+        let exportText = `STORYBOARD VIDEO\n`;
+        exportText += `===============\n\n`;
+        exportText += `Judul: ${currentStoryboard.title}\n`;
+        exportText += `Template: ${currentStoryboard.template}\n`;
+        exportText += `AI Enhanced: ${currentStoryboard.aiEnhanced ? 'Ya' : 'Tidak'}\n`;
+        exportText += `Dihasilkan: ${currentStoryboard.generatedAt}\n\n`;
+        exportText += `PRODUK IKLAN: ${currentStoryboard.ad.product}\n`;
+        exportText += `Tagline: ${currentStoryboard.ad.tagline}\n`;
+        exportText += `Target: ${getTargetLabel(currentStoryboard.ad.target)}\n\n`;
+        exportText += `ADEAN-ADEAN:\n`;
+        exportText += `----------\n\n`;
+        
+        currentStoryboard.scenes.forEach((scene, index) => {
+            exportText += `${index + 1}. ${scene.title} (${scene.duration}s)\n`;
+            exportText += `   ${scene.desc}\n`;
+            if (scene.aiGenerated) exportText += `   [AI Generated]\n`;
+            exportText += `\n`;
+        });
+        
+        // Create download
+        const blob = new Blob([exportText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `storyboard-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('Storyboard berjalu diexport!');
+    }
+    
+    function copyToClipboard() {
+        if (!currentStoryboard) {
+            alert('Sila hasilkan storyboard dahulu.');
+            return;
+        }
+        
+        let copyText = `🎬 ${currentStoryboard.title}\n\n`;
+        
+        currentStoryboard.scenes.forEach((scene, index) => {
+            copyText += `${index + 1}. ${scene.title} (${scene.duration}s)\n`;
+            copyText += `   ${scene.desc}\n\n`;
+        });
+        
+        navigator.clipboard.writeText(copyText)
+            .then(() => alert('Storyboard disalin ke clipboard!'))
+            .catch(err => alert('Gagal menyalin: ' + err));
+    }
+    
+    function resetAll() {
+        if (confirm('Set semula semua? Input semasa akan hilang.')) {
+            // Reset form
+            document.getElementById('ad-product').value = 'Kursus Al-Quran Premium';
+            document.getElementById('ad-tagline').value = 'Belajar Al-Quran Dengan Mudah Dari Rumah';
+            document.getElementById('ad-contact').value = 'www.quranpremium.com | WhatsApp: 012-3456789';
+            
+            // Reset template
+            selectedTemplate = 'education';
+            renderTemplates();
+            
+            // Hide storyboard
+            document.getElementById('storyboard-container').style.display = 'none';
+            currentStoryboard = null;
+            
+            console.log('System reset complete');
+        }
+    }
+    </script>
+</body>
+</html>

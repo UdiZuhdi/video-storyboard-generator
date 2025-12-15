@@ -1,0 +1,125 @@
+// api/index.js - Vercel Serverless API
+module.exports = async (req, res) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
+  // Handle OPTIONS request for CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  // Get the path
+  const path = req.url;
+
+  // Home/root endpoint
+  if (path === '/' || path === '/api' || path === '/api/') {
+    return res.json({
+      status: 'API is running',
+      service: 'Video Storyboard Generator Islami',
+      endpoints: [
+        '/api/health',
+        '/api/templates',
+        '/api/generate-image'
+      ]
+    });
+  }
+
+  // Health check endpoint
+  if (path === '/health' || path === '/api/health') {
+    return res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'production',
+      version: '1.0.0'
+    });
+  }
+
+  // Templates endpoint
+  if (path === '/templates' || path === '/api/templates') {
+    const templates = [
+      {
+        id: 1,
+        name: 'Keluarga Islam',
+        scenes: 5,
+        description: 'Kisah keluarga Islami dalam kehidupan seharian',
+        prompts: [
+          "Keluarga solat Subuh berjemaah di rumah",
+          "Ibu mengajar anak membaca Quran",
+          "Keluarga makan sahur bersama sebelum puasa",
+          "Ayah membawa keluarga ke masjid untuk solat Tarawih",
+          "Keluarga berkongsi rezeki dengan jiran yang memerlukan"
+        ]
+      },
+      {
+        id: 2,
+        name: 'Dakwah',
+        scenes: 5,
+        description: 'Cerita dakwah dan penyebaran Islam',
+        prompts: [
+          "Ustaz memberikan ceramah di masjid",
+          "Remaja Islam mengajar anak-anak mengaji",
+          "Program dakwah di kampus universiti",
+          "Aktiviti kebajikan masyarakat Islam",
+          "Diskusi Islamik dalam kelompok belia"
+        ]
+      }
+    ];
+    return res.json(templates);
+  }
+
+  // Generate image endpoint (POST)
+  if ((path === '/generate-image' || path === '/api/generate-image') && req.method === 'POST') {
+    try {
+      const body = req.body || {};
+      const { prompt, sceneNumber = 1, template = 'Keluarga Islam' } = body;
+
+      // Simulated response (akan diganti dengan OpenAI DALL-E)
+      const simulatedImage = `https://placehold.co/600x400/008000/white?text=${encodeURIComponent(prompt || 'Scene ' + sceneNumber)}`;
+      
+      return res.json({
+        success: true,
+        message: 'Image generated successfully (simulated)',
+        data: {
+          scene: sceneNumber,
+          prompt: prompt || `Adegan ${sceneNumber}: ${template}`,
+          template: template,
+          image_url: simulatedImage,
+          download_url: simulatedImage,
+          status: 'simulated',
+          note: 'Add OPENAI_API_KEY environment variable for real DALL-E 3 generation'
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Test generate endpoint (GET)
+  if ((path === '/generate-image' || path === '/api/generate-image') && req.method === 'GET') {
+    return res.json({
+      message: 'Use POST method to generate images',
+      example_post_body: {
+        prompt: "Keluarga solat berjemaah",
+        sceneNumber: 1,
+        template: "Keluarga Islam"
+      }
+    });
+  }
+
+  // 404 - Not Found
+  res.status(404).json({
+    error: 'Endpoint not found',
+    requested_path: path,
+    available_endpoints: ['/health', '/templates', '/generate-image (POST)']
+  });
+};

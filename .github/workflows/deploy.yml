@@ -1,0 +1,56 @@
+﻿name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Create deployment files
+        run: |
+          mkdir -p _site
+          echo "<!DOCTYPE html>
+          <html>
+          <head>
+            <title>Video Storyboard Generator</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; text-align: center; }
+              h1 { color: #333; }
+              .deploy-info { background: #f5f5f5; padding: 20px; border-radius: 10px; margin: 20px; }
+            </style>
+          </head>
+          <body>
+            <h1>🎬 Video Storyboard Generator</h1>
+            <p>GitHub Pages Backup Deployment</p>
+            <div class='deploy-info'>
+              <h3>📦 Deployment Status</h3>
+              <p>✅ GitHub Pages: Active</p>
+              <p>🔗 Primary: <a href='https://vercel.app'>Vercel Deployment</a></p>
+              <p>📅 Last updated: ${{ github.event.head_commit.timestamp }}</p>
+            </div>
+          </body>
+          </html>" > _site/index.html
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './_site'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
